@@ -1,8 +1,8 @@
 """
 Parser de mensajes de WhatsApp para el Calendario Freelancer.
 
-Convierte un mensaje en lenguaje natural (espanol rioplatense/latam) en una
-accion estructurada: crear evento, marcar entrega, registrar cobro, responder
+Convierte un mensaje en lenguaje natural (español rioplatense/latam) en una
+acción estructurada: crear evento, marcar entrega, registrar cobro, responder
 una consulta, actualizar o cancelar algo existente.
 
 Usa la Claude API con "tool use" (structured output) para forzar un schema
@@ -21,14 +21,14 @@ from typing import Any, Optional
 
 import anthropic
 
-MODEL = "claude-sonnet-4-5"
+MODEL = "claude-sonnet-5"
 
-# --- Schema de la accion extraida ---------------------------------------
+# --- Schema de la acción extraída ---------------------------------------
 
 EXTRACT_TOOL = {
     "name": "extraer_accion_calendario",
     "description": (
-        "Extrae la accion de calendario/cobro que el usuario quiere "
+        "Extrae la acción de calendario/cobro que el usuario quiere "
         "registrar a partir de un mensaje de WhatsApp en lenguaje natural."
     ),
     "input_schema": {
@@ -47,13 +47,13 @@ EXTRACT_TOOL = {
                     "cancelacion",
                     "no_reconocido",
                 ],
-                "description": "Tipo de accion que representa el mensaje.",
+                "description": "Tipo de acción que representa el mensaje.",
             },
             "titulo": {
                 "type": "string",
                 "description": (
-                    "Descripcion corta del evento/entrega/cobro, ej. "
-                    "'Reunion con Perez', 'Entregar diseno a Gomez'."
+                    "Descripción corta del evento/entrega/cobro, ej. "
+                    "'Reunión con Pérez', 'Entregar diseño a Gómez'."
                 ),
             },
             "cliente": {
@@ -64,7 +64,7 @@ EXTRACT_TOOL = {
                 "type": ["string", "null"],
                 "description": (
                     "Fecha en formato ISO YYYY-MM-DD si se puede determinar "
-                    "sin ambiguedad a partir de la fecha_referencia. null si "
+                    "sin ambigüedad a partir de la fecha_referencia. null si "
                     "es ambigua o no se menciona."
                 ),
             },
@@ -73,7 +73,7 @@ EXTRACT_TOOL = {
                 "description": (
                     "Si la fecha mencionada no se puede resolver con "
                     "certeza (ej. 'el viernes' sin saber si es esta semana o "
-                    "la proxima), el texto original de la referencia temporal."
+                    "la próxima), el texto original de la referencia temporal."
                 ),
             },
             "hora": {
@@ -82,7 +82,7 @@ EXTRACT_TOOL = {
             },
             "monto": {
                 "type": ["number", "null"],
-                "description": "Monto numerico del cobro, si aplica.",
+                "description": "Monto numérico del cobro, si aplica.",
             },
             "moneda": {
                 "type": ["string", "null"],
@@ -91,40 +91,40 @@ EXTRACT_TOOL = {
             "referencia_objetivo": {
                 "type": ["string", "null"],
                 "description": (
-                    "Para modificaciones/cancelaciones: a que evento previo "
-                    "se refiere el mensaje (ej. 'lo de Perez', 'el martes'). "
+                    "Para modificaciones/cancelaciones: a qué evento previo "
+                    "se refiere el mensaje (ej. 'lo de Pérez', 'el martes'). "
                     "null si no aplica o si el mensaje no da suficiente "
                     "contexto para identificar el evento (requiere memoria "
-                    "de conversacion que el parser no tiene todavia)."
+                    "de conversación que el parser no tiene todavía)."
                 ),
             },
             "requiere_contexto_previo": {
                 "type": "boolean",
                 "description": (
                     "true si el mensaje depende de un mensaje anterior en la "
-                    "conversacion para resolverse (ej. 'cancelalo' sin decir "
-                    "que). El parser actual no tiene memoria, asi que estos "
-                    "casos deben marcarse para revision humana o para un "
+                    "conversación para resolverse (ej. 'cancelalo' sin decir "
+                    "qué). El parser actual no tiene memoria, así que estos "
+                    "casos deben marcarse para revisión humana o para un "
                     "futuro manejo de contexto conversacional."
                 ),
             },
             "acciones_multiples": {
                 "type": "boolean",
                 "description": (
-                    "true si el mensaje contiene mas de una intencion junta "
-                    "(ej. 'reunion con Perez el lunes y cobrarle 20000'). "
-                    "Cuando es true, 'titulo' resume la primera accion y "
-                    "'notas' describe la segunda para revision manual."
+                    "true si el mensaje contiene más de una intención junta "
+                    "(ej. 'reunión con Pérez el lunes y cobrarle 20000'). "
+                    "Cuando es true, 'titulo' resume la primera acción y "
+                    "'notas' describe la segunda para revisión manual."
                 ),
             },
             "notas": {
                 "type": ["string", "null"],
-                "description": "Cualquier informacion adicional relevante que no entra en los otros campos.",
+                "description": "Cualquier información adicional relevante que no entra en los otros campos.",
             },
             "confianza": {
                 "type": "string",
                 "enum": ["alta", "media", "baja"],
-                "description": "Que tan seguro esta el modelo de la extraccion.",
+                "description": "Qué tan seguro está el modelo de la extracción.",
             },
         },
         "required": ["intencion", "titulo", "confianza"],
@@ -132,24 +132,24 @@ EXTRACT_TOOL = {
 }
 
 SYSTEM_PROMPT = """Sos el parser de mensajes de un bot de WhatsApp para \
-freelancers en Argentina/LATAM. Tu unica tarea es leer UN mensaje del \
-usuario y extraer la accion de calendario o cobro que representa, llamando \
+freelancers en Argentina/LATAM. Tu única tarea es leer UN mensaje del \
+usuario y extraer la acción de calendario o cobro que representa, llamando \
 SIEMPRE a la herramienta extraer_accion_calendario.
 
 Reglas importantes:
 - Nunca inventes una fecha exacta si es ambigua (ej. "el viernes" sin saber \
-  si es esta semana). En ese caso, fecha=null y completa fecha_ambigua con \
+  si es esta semana). En ese caso, fecha=null y completá fecha_ambigua con \
   el texto original.
 - Si el mensaje depende de contexto de mensajes anteriores para tener \
-  sentido (ej. "cancelalo", "movelo para el jueves" sin decir que), marca \
+  sentido (ej. "cancelalo", "movelo para el jueves" sin decir qué), marcá \
   requiere_contexto_previo=true y referencia_objetivo con lo poco que se \
   pueda inferir (o null).
 - Si el mensaje mezcla dos intenciones (ej. agendar Y cobrar en el mismo \
-  mensaje), marca acciones_multiples=true.
-- Si el mensaje no es una accion de calendario/cobro reconocible (chat \
-  casual, saludo, pregunta no soportada), usa intencion="no_reconocido".
-- La fecha de referencia ("hoy") para resolver terminos relativos como \
-  "manana" o "el martes que viene" te la paso en el mensaje de usuario.
+  mensaje), marcá acciones_multiples=true.
+- Si el mensaje no es una acción de calendario/cobro reconocible (chat \
+  casual, saludo, pregunta no soportada), usá intencion="no_reconocido".
+- La fecha de referencia ("hoy") para resolver términos relativos como \
+  "mañana" o "el martes que viene" te la paso en el mensaje de usuario.
 """
 
 
@@ -176,9 +176,9 @@ class MessageParser:
         self.client = anthropic.Anthropic(api_key=api_key or os.environ.get("ANTHROPIC_API_KEY"))
 
     def parse_message(self, mensaje: str, fecha_referencia: Optional[date] = None) -> ParsedAction:
-        """Parsea un mensaje de WhatsApp y devuelve la accion estructurada.
+        """Parsea un mensaje de WhatsApp y devuelve la acción estructurada.
 
-        fecha_referencia: la fecha de "hoy" para resolver "manana", "el
+        fecha_referencia: la fecha de "hoy" para resolver "mañana", "el
         viernes que viene", etc. Default: hoy real.
         """
         hoy = fecha_referencia or date.today()
@@ -216,10 +216,10 @@ class MessageParser:
                     raw=data,
                 )
 
-        raise RuntimeError("El modelo no devolvio un tool_use valido para extraer_accion_calendario")
+        raise RuntimeError("El modelo no devolvió un tool_use válido para extraer_accion_calendario")
 
 
-_DIAS = ["lunes", "martes", "miercoles", "jueves", "viernes", "sabado", "domingo"]
+_DIAS = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"]
 
 
 def _dia_semana_es(d: date) -> str:
@@ -228,7 +228,6 @@ def _dia_semana_es(d: date) -> str:
 
 if __name__ == "__main__":
     parser = MessageParser()
-    ejemplo = "reunion con cliente Perez viernes 15hs"
+    ejemplo = "reunión con cliente Pérez viernes 15hs"
     resultado = parser.parse_message(ejemplo)
     print(json.dumps(resultado.raw, indent=2, ensure_ascii=False))
-
