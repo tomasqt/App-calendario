@@ -1,40 +1,40 @@
 {
   "fecha_referencia": "2026-08-31",
-  "_nota": "fecha_referencia es un lunes fijo para que las fechas relativas ('manana', 'el viernes') sean reproducibles entre corridas. 'expected' solo lista los campos que se validan; el resto del output del modelo no se compara.",
+  "_nota": "fecha_referencia es un lunes fijo para que las fechas relativas ('mañana', 'el viernes') sean reproducibles entre corridas. 'expected' solo lista los campos que se validan; el resto del output del modelo no se compara.",
   "casos": [
     {
       "id": 1,
       "grupo": "brief",
-      "mensaje": "reunion con cliente Perez viernes 15hs",
+      "mensaje": "reunión con cliente Pérez viernes 15hs",
       "expected": {
         "intencion": "reunion",
-        "cliente": "Perez",
+        "cliente": "Pérez",
         "hora": "15:00"
       }
     },
     {
       "id": 2,
       "grupo": "brief",
-      "mensaje": "entregar diseno para Gomez el martes",
+      "mensaje": "entregar diseño para Gómez el martes",
       "expected": {
         "intencion": "entrega",
-        "cliente": "Gomez"
+        "cliente": "Gómez"
       }
     },
     {
       "id": 3,
       "grupo": "brief",
-      "mensaje": "cobrar $50.000 a Martinez el 30",
+      "mensaje": "cobrar $50.000 a Martínez el 30",
       "expected": {
         "intencion": "cobro",
-        "cliente": "Martinez",
+        "cliente": "Martínez",
         "monto": 50000
       }
     },
     {
       "id": 4,
       "grupo": "brief",
-      "mensaje": "que tengo esta semana?",
+      "mensaje": "qué tengo esta semana?",
       "expected": {
         "intencion": "consulta_semana"
       }
@@ -42,7 +42,7 @@
     {
       "id": 5,
       "grupo": "brief",
-      "mensaje": "que me deben?",
+      "mensaje": "qué me deben?",
       "expected": {
         "intencion": "consulta_cobros"
       }
@@ -50,19 +50,19 @@
     {
       "id": 6,
       "grupo": "brief",
-      "mensaje": "listo el logo de Fernandez",
+      "mensaje": "listo el logo de Fernández",
       "expected": {
         "intencion": "actualizacion",
-        "cliente": "Fernandez"
+        "cliente": "Fernández"
       }
     },
     {
       "id": 7,
       "grupo": "brief",
-      "mensaje": "mover lo de Perez al lunes",
+      "mensaje": "mover lo de Pérez al lunes",
       "expected": {
         "intencion": "modificacion",
-        "cliente": "Perez"
+        "cliente": "Pérez"
       }
     },
     {
@@ -76,7 +76,7 @@
     {
       "id": 9,
       "grupo": "limite",
-      "descripcion": "Referencia sin contexto - requiere memoria de conversacion que el parser todavia no tiene",
+      "descripcion": "Referencia sin contexto - requiere memoria de conversación que el parser todavía no tiene",
       "mensaje": "cancelalo",
       "expected": {
         "intencion": "cancelacion",
@@ -87,7 +87,7 @@
       "id": 10,
       "grupo": "limite",
       "descripcion": "Fecha ambigua sin cliente",
-      "mensaje": "reunion el viernes",
+      "mensaje": "reunión el viernes",
       "expected": {
         "intencion": "reunion",
         "cliente": null,
@@ -98,7 +98,7 @@
       "id": 11,
       "grupo": "limite",
       "descripcion": "Dos intenciones juntas en un mismo mensaje",
-      "mensaje": "reunion con Perez el lunes y cobrarle 20000",
+      "mensaje": "reunión con Pérez el lunes y cobrarle 20000",
       "expected": {
         "acciones_multiples": true
       }
@@ -106,7 +106,7 @@
     {
       "id": 12,
       "grupo": "limite",
-      "descripcion": "Chat casual sin accion reconocible",
+      "descripcion": "Chat casual sin acción reconocible",
       "mensaje": "dale, entonces nos vemos",
       "expected": {
         "intencion": "no_reconocido"
@@ -124,11 +124,11 @@
     {
       "id": 14,
       "grupo": "limite",
-      "descripcion": "Fecha relativa resoluble ('manana')",
-      "mensaje": "reunion manana 10am con Lopez",
+      "descripcion": "Fecha relativa resoluble ('mañana')",
+      "mensaje": "reunión mañana 10am con López",
       "expected": {
         "intencion": "reunion",
-        "cliente": "Lopez",
+        "cliente": "López",
         "fecha": "2026-09-01",
         "hora": "10:00"
       }
@@ -137,7 +137,7 @@
       "id": 15,
       "grupo": "limite",
       "descripcion": "Dos entregas distintas en un mismo mensaje",
-      "mensaje": "entrega para Gomez y para Perez el viernes",
+      "mensaje": "entrega para Gómez y para Pérez el viernes",
       "expected": {
         "acciones_multiples": true
       }
@@ -145,22 +145,22 @@
     {
       "id": 16,
       "grupo": "limite",
-      "descripcion": "Cobro sin verbo explicito, mensaje minimo",
-      "mensaje": "$15000 Fernandez",
+      "descripcion": "Cobro sin verbo explícito, mensaje mínimo",
+      "mensaje": "$15000 Fernández",
       "expected": {
         "intencion": "cobro",
-        "cliente": "Fernandez",
+        "cliente": "Fernández",
         "monto": 15000
       }
     },
     {
       "id": 17,
       "grupo": "limite",
-      "descripcion": "Cobro ya resuelto (jerga 'lucas') - deberia marcar como pagado, no como pendiente",
-      "mensaje": "Perez me pago los 50 lucas",
+      "descripcion": "Cobro ya resuelto (jerga 'lucas') - debería marcar como pagado, no como pendiente",
+      "mensaje": "Pérez me pagó los 50 lucas",
       "expected": {
         "intencion": "actualizacion",
-        "cliente": "Perez",
+        "cliente": "Pérez",
         "monto": 50000
       }
     },
@@ -168,18 +168,18 @@
       "id": 18,
       "grupo": "limite",
       "descripcion": "Cobro futuro con fecha relativa vaga",
-      "mensaje": "recordame cobrarle a Gomez la semana que viene",
+      "mensaje": "recordame cobrarle a Gómez la semana que viene",
       "expected": {
         "intencion": "cobro",
-        "cliente": "Gomez",
+        "cliente": "Gómez",
         "fecha": null
       }
     },
     {
       "id": 19,
       "grupo": "limite",
-      "descripcion": "Mensaje informal, referencia relativa a evento existente",
-      "mensaje": "se me complico lo de manana, mejor pasemoslo",
+      "descripcion": "Mensaje informal con emoji, referencia relativa a evento existente",
+      "mensaje": "😅 se me complicó lo de mañana, mejor pasémoslo",
       "expected": {
         "intencion": "modificacion"
       }
@@ -187,7 +187,7 @@
     {
       "id": 20,
       "grupo": "limite",
-      "descripcion": "Saludo puro, sin ninguna accion",
+      "descripcion": "Saludo puro, sin ninguna acción",
       "mensaje": "hola",
       "expected": {
         "intencion": "no_reconocido"
@@ -195,3 +195,4 @@
     }
   ]
 }
+
