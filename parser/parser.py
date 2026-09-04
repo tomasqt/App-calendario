@@ -146,6 +146,12 @@ Reglas importantes:
   pueda inferir (o null).
 - Si el mensaje mezcla dos intenciones (ej. agendar Y cobrar en el mismo \
   mensaje), marcá acciones_multiples=true.
+- Si el mensaje informa que algo que YA estaba planificado o pendiente se \
+  completó, se entregó o se cobró (ej. "listo el logo de Fernández", "ya le \
+  entregué a Gómez", "Pérez me pagó los 50 lucas", "cobré lo de Martínez"), \
+  usá intencion="actualizacion" (estás actualizando el estado de algo que \
+  ya existía, no registrando una entrega o un cobro nuevo a agendar). Si el \
+  mensaje menciona un monto, completá igual el campo monto.
 - Si el mensaje no es una acción de calendario/cobro reconocible (chat \
   casual, saludo, pregunta no soportada), usá intencion="no_reconocido".
 - La fecha de referencia ("hoy") para resolver términos relativos como \
